@@ -37,12 +37,12 @@ class ObjectStore(object):
         )
         self.bucket_prefix = bucket_prefix
 
+        #self.s3.meta.client.meta.events.register(
+        #    'before-call.s3.CreateMultipartUpload',
+        #    lambda **a: print(a),
+        #)
         self.s3.meta.client.meta.events.register(
-            'request-created.s3.CompleteMultipartUpload',
-            self._set_content_type,
-        )
-        self.s3_client.meta.client.meta.events.register(
-            'request-created.s3.CompleteMultipartUpload',
+            'request-created.s3.CreateMultipartUpload',
             self._set_content_type,
         )
 
@@ -50,7 +50,8 @@ class ObjectStore(object):
     def _set_content_type(request, **kwargs):
         """Set the content-type as required by GCP's implementation of S3.
         """
-        request.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+        print("CHANGING REQUEST: %r" % (request,))
+        request.headers['Content-Type'] = 'multipart/form-data'
 
     def bucket_name(self, name):
         if name not in ('experiments', 'inputs', 'outputs'):
