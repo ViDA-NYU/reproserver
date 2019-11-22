@@ -37,14 +37,14 @@ class ObjectStore(object):
         )
         self.bucket_prefix = bucket_prefix
 
-        #self.s3.meta.client.meta.events.register(
-        #    'request-created.s3.CompleteMultipartUpload',
-        #    self._set_content_type,
-        #)
-        #self.s3_client.meta.client.meta.events.register(
-        #    'request-created.s3.CompleteMultipartUpload',
-        #    self._set_content_type,
-        #)
+        self.s3.meta.client.meta.events.register(
+            'request-created.s3.CompleteMultipartUpload',
+            self._set_content_type,
+        )
+        self.s3_client.meta.client.meta.events.register(
+            'request-created.s3.CompleteMultipartUpload',
+            self._set_content_type,
+        )
 
     @staticmethod
     def _set_content_type(request, **kwargs):
@@ -69,8 +69,8 @@ class ObjectStore(object):
         self.s3.Object(self.bucket_name(bucket), objectname).put(Body=fileobj)
 
     def upload_file(self, bucket, objectname, filename):
-        with open(filename, 'rb') as fileobj:
-            self.upload_fileobj(bucket, objectname, fileobj)
+        self.s3.meta.client.upload_file(filename,
+                                        self.bucket_name(bucket), objectname)
 
     def upload_file_async(self, bucket, objectname, filename):
         return asyncio.get_event_loop().run_in_executor(
