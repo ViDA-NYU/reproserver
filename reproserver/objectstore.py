@@ -37,6 +37,21 @@ class ObjectStore(object):
         )
         self.bucket_prefix = bucket_prefix
 
+        #self.s3.meta.client.meta.events.register(
+        #    'request-created.s3.CompleteMultipartUpload',
+        #    self._set_content_type,
+        #)
+        #self.s3_client.meta.client.meta.events.register(
+        #    'request-created.s3.CompleteMultipartUpload',
+        #    self._set_content_type,
+        #)
+
+    @staticmethod
+    def _set_content_type(request, **kwargs):
+        """Set the content-type as required by GCP's implementation of S3.
+        """
+        request.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+
     def bucket_name(self, name):
         if name not in ('experiments', 'inputs', 'outputs'):
             raise ValueError("Invalid bucket name %s" % name)
@@ -51,13 +66,7 @@ class ObjectStore(object):
         self.bucket(bucket).download_file(objectname, filename)
 
     def upload_fileobj(self, bucket, objectname, fileobj):
-        # s3.Object(...).put(...) and s3.meta.client.upload_file(...) do
-        # multipart uploads which don't work on GCP
-        self.s3.meta.client.put_object(
-            Bucket=self.bucket_name(bucket),
-            Key=objectname,
-            Body=fileobj,
-        )
+        self.s3.Object(self.bucket_name(bucket), objectname).put(Body=fileobj)
 
     def upload_file(self, bucket, objectname, filename):
         with open(filename, 'rb') as fileobj:
