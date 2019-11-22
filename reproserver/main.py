@@ -47,7 +47,7 @@ class K8sProxyHandler(ProxyHandler):
 
 def main():
     logging.root.handlers.clear()
-    logging.basicConfig(level=logging.INFO,
+    logging.basicConfig(level=logging.DEBUG,
                         format="%(asctime)s %(levelname)s: %(message)s")
     prometheus_client.start_http_server(8090)
 
